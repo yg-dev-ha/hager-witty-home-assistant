@@ -27,6 +27,7 @@ Intégration non officielle pour les bornes **Hager Witty Start** connectées à
 
 - Home Assistant **2026.10.0 ou supérieur**.
 - Une Witty Start connectée au cloud, déjà visible et pilotable dans l’application Hager Witty, et le compte Hager correspondant.
+- Pour une connexion Wi-Fi, la borne doit être équipée de la **[carte de communication Wi-Fi Hager XEVA220 pour bornes XEV1K](https://hager.com/fr/catalogue/produits/xeva220-carte-wifi)**, installée, configurée et connectée à Internet. La carte seule ne suffit pas : terminer la configuration dans l’application Hager Witty et vérifier l’accès au cloud avant d’ajouter cette intégration. Consulter la notice Hager pour les prérequis matériels propres à la version de la borne.
 - Un accès Internet de Home Assistant aux services Hager.
 - HACS, ou un accès au dossier de configuration HA pour une installation manuelle.
 

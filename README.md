@@ -32,6 +32,7 @@ Unofficial integration for **Hager Witty Start** chargers connected to **Hager C
 
 - Home Assistant **2026.10.0 or later**.
 - A cloud-connected Witty Start already visible and controllable in the Hager Witty app, and the corresponding Hager account.
+- For Wi-Fi connectivity, the charger must be equipped with the **[Hager XEVA220 Wi-Fi communication card for XEV1K chargers](https://hager.com/fr/catalogue/produits/xeva220-carte-wifi)**, installed, configured and connected to the Internet. The card alone is not enough: complete Hager Witty app setup and verify cloud access before adding this integration. Check Hager's installation instructions for the hardware requirements of your charger revision.
 - Internet access from Home Assistant to Hager's login and API services.
 - HACS for managed installation, or access to your Home Assistant configuration folder for manual installation.
 
