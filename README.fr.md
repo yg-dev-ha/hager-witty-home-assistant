@@ -48,14 +48,26 @@ Pour passer d’une installation manuelle à HACS, sauvegarder le dossier, insta
 
 ## Connexion Hager
 
-1. Choisir le pays du compte et la langue (`FR` / `fr` par défaut).
-2. Ouvrir le lien **Connexion Hager** dans un nouvel onglet et s’authentifier sur la page Hager.
-3. La redirection finale utilise `com.miaaguardusercontent…:/callback`. Un navigateur sur PC peut indiquer qu’il ne sait pas ouvrir ce lien d’application.
-4. Copier **l’URI callback complète** dans Home Assistant. Il est aussi possible de coller uniquement la valeur entre `code=` et le prochain `&`.
+**En v0.1.0, la connexion nécessite de recopier manuellement le callback d’autorisation dans Home Assistant.** Hager redirige vers l’URI de son application mobile `com.miaaguardusercontent…:/callback`, et non vers HA. Sur un navigateur PC, cette URI peut n’être visible que dans les outils de développement.
 
-Le callback complet est préférable : sa destination et son paramètre OAuth `state` sont vérifiés. Le code seul reste accepté avec PKCE, mais ne permet pas de vérifier `state`. Utiliser le code de cette tentative de configuration, une seule fois. Si le navigateur masque le callback, ouvrir ses outils de développement → Réseau, activer la conservation du journal et consulter l’en-tête `Location` de la dernière redirection. Ne jamais partager cette URL ou une capture réseau.
+1. Choisir le pays du compte et la langue (`FR` / `fr` par défaut).
+2. Ouvrir le lien **Connexion Hager** dans un nouvel onglet. Garder le formulaire de configuration Home Assistant ouvert.
+3. **Avant de se connecter**, ouvrir les outils de développement (**F12** ou **Ctrl+Maj+I** sous Windows/Linux). Dans **Console**, activer **Conserver le journal / Preserve log** (le libellé varie selon le navigateur). Activer également cette option dans **Réseau / Network** pour utiliser la méthode de secours ci-dessous si nécessaire.
+4. Se connecter sur la page Hager. Le navigateur peut indiquer qu’il ne sait pas ouvrir le lien d’application ; ce message seul ne signifie pas que la connexion Hager a échoué.
+5. Dans **Console**, repérer le message contenant `com.miaaguardusercontent` et `code=`, souvent associé à une erreur d’ouverture de l’URI. Copier **l’URI callback complète**, sans le texte d’erreur ni les guillemets qui l’entourent.
+6. Revenir au même formulaire Home Assistant, coller le callback dans le champ d’autorisation et valider. Il est aussi possible de coller uniquement la valeur entre `code=` et le prochain `&`.
+
+**Si la Console n’affiche pas le callback :** dans **Réseau / Network**, consulter la dernière réponse de redirection, puis **En-têtes → En-têtes de réponse → Location**. Rechercher la même URI mobile. Si les outils ont été ouverts trop tard, rouvrir le lien de connexion depuis le formulaire HA en cours et se reconnecter avec la conservation du journal activée.
+
+Le callback complet est préférable : sa destination et son paramètre OAuth `state` sont vérifiés. Le code seul reste accepté avec PKCE, mais ne permet pas de vérifier `state`. Utiliser le code de cette tentative de configuration, une seule fois. Le callback et le code sont des données d’authentification : les coller uniquement dans le formulaire HA, jamais dans une issue, une capture d’écran, un journal partagé ou un chat. Aucune commande ni aucun script ne doit être collé dans la console du navigateur.
 
 Si le code expire, rouvrir le lien de connexion. Si la recherche de la borne échoue temporairement **après** l’échange du code, soumettre à nouveau le formulaire : la configuration en cours conserve les jetons pour ce nouvel essai. Aucun mot de passe Hager n’est enregistré par l’intégration.
+
+### Pourquoi la connexion n’est-elle pas automatique ?
+
+Cette version utilise le callback OAuth de l’application mobile. Un retour direct vers Home Assistant nécessiterait une URI de redirection compatible autorisée par Hager ; remplacer simplement l’URL dans l’intégration ne suffit pas. Le retour direct vers HA ou un assistant local de connexion sont des pistes à étudier, **pas des fonctionnalités disponibles dans cette version**.
+
+Après la configuration, les jetons sont renouvelés automatiquement. Cette manipulation est normalement nécessaire uniquement à la première connexion ou lorsqu’une réauthentification est demandée, pas à chaque redémarrage de Home Assistant.
 
 ## Entités et fonctionnement
 

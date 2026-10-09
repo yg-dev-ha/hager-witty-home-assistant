@@ -53,14 +53,26 @@ If migrating an existing manual installation to HACS, back up the folder first, 
 
 ## Connect your account
 
-1. Select your Hager account country and login language (`FR` / `fr` by default).
-2. Open the displayed **Hager login** link in a separate browser tab and sign in on Hager's page.
-3. The final redirect uses `com.miaaguardusercontent…:/callback`. A desktop browser may report that it cannot open this application link.
-4. Copy the **complete callback URI** and paste it into Home Assistant. Alternatively, paste only the value between `code=` and the next `&`.
+**In v0.1.0, completing sign-in requires manually copying the authorization callback into Home Assistant.** Hager redirects to its mobile application's `com.miaaguardusercontent…:/callback` URI, rather than back to HA. On a desktop browser, this URI may only be visible in Developer Tools.
 
-The full callback is preferred: the integration validates its destination and OAuth `state`. A raw code is supported with PKCE, but cannot carry a state check. Use the code from this setup attempt, once only. If your browser hides the redirect, open its Developer Tools → Network, enable Preserve log and inspect the final redirect's `Location` header. Do not share that URL or a network capture.
+1. Select your Hager account country and login language (`FR` / `fr` by default).
+2. Open the displayed **Hager login** link in a separate tab. Keep the Home Assistant setup form open.
+3. **Before signing in**, open Developer Tools (**F12** or **Ctrl+Shift+I** on Windows/Linux). In **Console**, enable **Preserve log** (the wording varies by browser). Also enable **Preserve log** in **Network** if you need the fallback below.
+4. Sign in on Hager's page. The browser may report that it cannot open the application link; this alone does not mean the Hager login failed.
+5. In **Console**, look for a message containing `com.miaaguardusercontent` and `code=`, often reporting that the browser could not launch the URI. Copy the **complete callback URI**, without the surrounding error text or quotation marks.
+6. Return to the same Home Assistant setup form, paste the callback into the authorization field and submit. Alternatively, paste only the value between `code=` and the next `&`.
+
+**If the Console does not show the callback:** in **Network**, inspect the final redirect response and its **Headers → Response Headers → Location** value. Look for the same mobile callback URI. If Developer Tools were opened too late, reopen the login link from the active HA setup form and sign in again with log preservation enabled.
+
+The full callback is preferred: the integration validates its destination and OAuth `state`. A raw code is supported with PKCE, but cannot carry a state check. Use the code from this setup attempt, once only. Treat the callback and code as credentials: paste them only into your HA setup form, never into an issue, screenshot, shared log or chat. No command or script needs to be pasted into the browser console.
 
 If the code expires, reopen the login link and sign in again. If device discovery temporarily fails **after** the code exchange, submit the form again: the active setup flow retains the tokens for that retry. No Hager password is stored by the integration.
+
+### Why isn't sign-in automatic?
+
+This version uses the mobile app's OAuth callback. A direct return to Home Assistant would require a compatible redirect URI authorized by Hager; changing the URL in the integration alone is not sufficient. A direct HA callback or a local sign-in assistant are possible improvements to investigate, **not features currently provided by this release**.
+
+Tokens are renewed automatically after setup. Manual sign-in is normally only needed for initial setup or if reauthentication is requested; it is not required at every Home Assistant restart.
 
 ## Entities and state
 
