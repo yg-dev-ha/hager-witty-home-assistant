@@ -1,0 +1,91 @@
+{
+  "title": "Hager Witty Start",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Hager Witty Start",
+        "description": "Prepare the connection to your Hager account.",
+        "data": {
+          "country": "Hager account country",
+          "locale": "Login language"
+        }
+      },
+      "auth": {
+        "title": "Hager login",
+        "description": "1. Open [the Hager login page]({auth_url}) in a new tab.\n2. Sign in normally.\n3. The final redirect starts with `com.miaaguardusercontent...:/callback`; your desktop browser may be unable to open it.\n4. Paste the complete callback URL below (preferred), or only the value after `code=` and before the next `&`. Never share this URL.\n\nIf device discovery fails after login, submit again to retry within this setup flow.",
+        "data": {
+          "authorization_code": "Authorization code (or full callback URL)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnect Hager Witty",
+        "description": "The stored Hager authentication is no longer valid. Reconnect your account."
+      }
+    },
+    "error": {
+      "cannot_connect": "Unable to reach Hager.",
+      "invalid_auth": "Invalid or expired authorization code."
+    },
+    "abort": {
+      "already_configured": "This Witty charger is already configured.",
+      "cannot_connect": "Unable to prepare Hager login.",
+      "reauth_successful": "Hager reauthentication succeeded.",
+      "reauth_failed": "Unable to find the entry to reauthenticate.",
+      "wrong_account": "The reauthenticated account does not match the configured charger."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Hager Witty options",
+        "data": {
+          "scan_interval": "Update interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "session_energy": {
+        "name": "Session energy"
+      },
+      "session_cost": {
+        "name": "Session cost"
+      },
+      "session_duration": {
+        "name": "Connected duration"
+      },
+      "charging_duration": {
+        "name": "Charging duration"
+      },
+      "recovered_range": {
+        "name": "Recovered range"
+      },
+      "session_start": {
+        "name": "Session start"
+      },
+      "session_end": {
+        "name": "Session end"
+      },
+      "token_expiry": {
+        "name": "Token expiry"
+      },
+      "event_type": {
+        "name": "Event code"
+      }
+    },
+    "binary_sensor": {
+      "charging": {
+        "name": "Charging"
+      }
+    },
+    "switch": {
+      "charge": {
+        "name": "Charge"
+      }
+    }
+  }
+}

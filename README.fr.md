@@ -8,6 +8,7 @@
 <h1 align="center">Hager Witty Start · Home Assistant</h1>
 <p align="center">Consultez votre borne, suivez la session et démarrez ou arrêtez la charge depuis Home Assistant.</p>
 <p align="center"><a href="README.md">English</a> · <strong>Français</strong></p>
+<p align="center"><a href="https://github.com/yg-dev-ha/hager-witty-home-assistant/actions/workflows/validate.yml"><img alt="Validation" src="https://github.com/yg-dev-ha/hager-witty-home-assistant/actions/workflows/validate.yml/badge.svg?branch=main"></a></p>
 
 Intégration non officielle pour les bornes **Hager Witty Start** connectées à **Hager Cloud**. Installation comme dépôt personnalisé HACS pour recevoir les notifications de mise à jour. Projet communautaire indépendant, sans affiliation ni validation de Hager.
 

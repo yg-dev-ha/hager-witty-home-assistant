@@ -1,0 +1,91 @@
+{
+  "title": "Hager Witty Start",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Hager Witty Start",
+        "description": "Prépare la connexion à ton compte Hager.",
+        "data": {
+          "country": "Pays du compte Hager",
+          "locale": "Langue de connexion"
+        }
+      },
+      "auth": {
+        "title": "Connexion Hager",
+        "description": "1. Ouvrez [la page de connexion Hager]({auth_url}) dans un nouvel onglet.\n2. Connectez-vous normalement.\n3. La redirection finale commence par `com.miaaguardusercontent...:/callback` ; votre navigateur sur PC peut ne pas savoir l’ouvrir.\n4. Collez le callback complet ci-dessous (recommandé), ou seulement la valeur après `code=` et avant le prochain `&`. Ne partagez jamais cette URL.\n\nSi la recherche de la borne échoue après connexion, soumettez à nouveau ce formulaire pour réessayer.",
+        "data": {
+          "authorization_code": "Code d'autorisation (ou URL callback complète)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reconnecter Hager Witty",
+        "description": "Le jeton Hager n'est plus valide. Reconnecte le compte."
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossible de joindre le service Hager.",
+      "invalid_auth": "Code invalide, expiré ou ne correspondant pas à cette tentative de connexion. Relance la connexion Hager puis colle le nouveau code."
+    },
+    "abort": {
+      "already_configured": "Cette borne Witty est déjà configurée.",
+      "cannot_connect": "Impossible de préparer la connexion Hager.",
+      "reauth_successful": "Reconnexion Hager réussie.",
+      "reauth_failed": "Impossible de retrouver l'entrée à reconnecter.",
+      "wrong_account": "Le compte reconnecté ne correspond pas à la borne déjà configurée."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options Hager Witty",
+        "data": {
+          "scan_interval": "Intervalle d’actualisation (secondes)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "État"
+      },
+      "session_energy": {
+        "name": "Énergie de la session"
+      },
+      "session_cost": {
+        "name": "Coût de la session"
+      },
+      "session_duration": {
+        "name": "Durée de connexion"
+      },
+      "charging_duration": {
+        "name": "Durée de charge"
+      },
+      "recovered_range": {
+        "name": "Autonomie récupérée"
+      },
+      "session_start": {
+        "name": "Début de session"
+      },
+      "session_end": {
+        "name": "Fin de session"
+      },
+      "token_expiry": {
+        "name": "Expiration du jeton"
+      },
+      "event_type": {
+        "name": "Code événement"
+      }
+    },
+    "binary_sensor": {
+      "charging": {
+        "name": "Charge en cours"
+      }
+    },
+    "switch": {
+      "charge": {
+        "name": "Charge"
+      }
+    }
+  }
+}

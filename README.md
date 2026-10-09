@@ -9,7 +9,7 @@
 <p align="center">See your charger. Follow your session. Start and stop charging from Home Assistant.</p>
 <p align="center">
   <a href="https://github.com/yg-dev-ha/hager-witty-home-assistant/releases"><img alt="Release" src="https://img.shields.io/github/v/release/yg-dev-ha/hager-witty-home-assistant"></a>
-  <a href="https://github.com/yg-dev-ha/hager-witty-home-assistant/actions/workflows/validate.yml"><img alt="Validation" src="https://github.com/yg-dev-ha/hager-witty-home-assistant/actions/workflows/validate.yml/badge.svg"></a>
+  <a href="https://github.com/yg-dev-ha/hager-witty-home-assistant/actions/workflows/validate.yml"><img alt="Validation" src="https://github.com/yg-dev-ha/hager-witty-home-assistant/actions/workflows/validate.yml/badge.svg?branch=main"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-green"></a>
   <img alt="Home Assistant 2026.10 or later" src="https://img.shields.io/badge/Home_Assistant-2026.10%2B-41BDF5">
 </p>

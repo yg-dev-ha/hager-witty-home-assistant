@@ -1,0 +1,15 @@
+{
+  "domain": "hager_witty",
+  "name": "Hager Witty Start",
+  "codeowners": [
+    "@yg-dev-ha"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/yg-dev-ha/hager-witty-home-assistant",
+  "integration_type": "device",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/yg-dev-ha/hager-witty-home-assistant/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

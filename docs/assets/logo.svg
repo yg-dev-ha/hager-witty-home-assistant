@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="220" viewBox="0 0 800 220" role="img" aria-label="Witty Start for Home Assistant">
+  <rect x="12" y="24" width="164" height="164" rx="38" fill="#033e63"/>
+  <path d="M64 151V69a8 8 0 0 1 8-8h46a8 8 0 0 1 8 8v82M56 151h78M126 93h12a10 10 0 0 1 10 10v30a7 7 0 0 0 14 0v-13" fill="none" stroke="#fff" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+  <rect x="75" y="75" width="39" height="24" rx="4" fill="#fff"/>
+  <path d="M99 105l-16 24h14l-7 20 24-29H99z" fill="#ffaf28"/>
+  <text x="210" y="105" font-family="DejaVu Sans, sans-serif" font-weight="700" font-size="56" fill="#142b3a">Witty Start</text>
+  <text x="212" y="150" font-family="DejaVu Sans, sans-serif" font-size="26" fill="#506878">Hager Cloud · Home Assistant</text>
+  <circle cx="745" cy="48" r="7" fill="#16b9cf"/>
+</svg>
