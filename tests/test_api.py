@@ -7,7 +7,7 @@ import sys
 import time
 import types
 import unittest
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 # Load the transport in isolation, without importing Home Assistant's setup.
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,7 +35,10 @@ class Session:
         self.calls = []
     def request(self, method, url, **kwargs):
         self.calls.append((method, url, kwargs))
-        status, payload = self.responses.pop(0)
+        response = self.responses.pop(0)
+        if isinstance(response, BaseException):
+            raise response
+        status, payload = response
         return Response(status, payload)
 
 class OAuthTests(unittest.IsolatedAsyncioTestCase):
@@ -90,6 +93,38 @@ class OAuthTests(unittest.IsolatedAsyncioTestCase):
             await client.async_get_user_data()
         self.assertEqual(client.token_data()['refresh_token'], 'refresh')
 
+    async def test_transient_resource_500_is_retried_once(self):
+        session = Session(
+            (500, {}),
+            (200, {'Device': {'Id': 'charger'}}),
+        )
+        sleeper = AsyncMock()
+        with patch.object(api.asyncio, 'sleep', sleeper):
+            data = await self.client(session).async_get_user_data()
+        self.assertEqual(data['Device']['Id'], 'charger')
+        self.assertEqual(len(session.calls), 2)
+        sleeper.assert_awaited_once_with(api._TRANSIENT_RETRY_DELAY_SECONDS)
+
+    async def test_transient_connection_error_is_retried_once(self):
+        session = Session(
+            api.ClientError('temporary failure'),
+            (200, {'Device': {'Id': 'charger'}}),
+        )
+        sleeper = AsyncMock()
+        with patch.object(api.asyncio, 'sleep', sleeper):
+            data = await self.client(session).async_get_user_data()
+        self.assertEqual(data['Device']['Id'], 'charger')
+        self.assertEqual(len(session.calls), 2)
+        sleeper.assert_awaited_once_with(api._TRANSIENT_RETRY_DELAY_SECONDS)
+
+    async def test_persistent_resource_500_stops_after_one_retry(self):
+        session = Session((500, {}), (500, {}))
+        with patch.object(api.asyncio, 'sleep', AsyncMock()):
+            with self.assertRaises(api.WittyApiError) as ctx:
+                await self.client(session).async_get_user_data()
+        self.assertEqual(ctx.exception.status, 500)
+        self.assertEqual(len(session.calls), 2)
+
     async def test_command_400_is_not_retried_or_logged(self):
         session = Session((400, {'secret':'do-not-log'}))
         with self.assertRaises(api.WittyApiError) as ctx:
@@ -97,6 +132,12 @@ class OAuthTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(session.calls), 1)
         self.assertTrue(session.calls[0][1].endswith('/a%2Fb/stop-charging'))
         self.assertNotIn('do-not-log', str(ctx.exception))
+
+    async def test_command_500_is_not_retried(self):
+        session = Session((500, {}))
+        with self.assertRaises(api.WittyApiError):
+            await self.client(session).async_control('charger', 'start')
+        self.assertEqual(len(session.calls), 1)
 
     async def test_malformed_refresh_preserves_credentials(self):
         for payload in [{}, {'access_token':'new','expires_in':'invalid'}, {'access_token':'new','expires_in':0}]:
