@@ -77,7 +77,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
         run: |
           version=$(python -c 'import json; print(json.load(open("custom_components/hager_witty/manifest.json"))["version"])')
-          if [[ "$EVENT_NAME" == "push" && "$version" != "0.1.0" && "$version" != "0.1.1" ]]; then
+          if [[ "$EVENT_NAME" == "push" && "$version" != "0.1.0" ]]; then
             echo "Later releases require an explicit workflow dispatch."
             exit 0
           fi
