@@ -25,6 +25,8 @@ from .const import (
 TokenUpdateCallback = Callable[[dict[str, Any]], Awaitable[None]]
 
 _LOGGER = logging.getLogger(__name__)
+_TRANSIENT_API_STATUSES = frozenset({500, 502, 503, 504})
+_TRANSIENT_RETRY_DELAY_SECONDS = 3.0
 
 
 class WittyError(Exception):
@@ -51,6 +53,10 @@ class WittyConnectionError(WittyError):
 
 class WittyApiError(WittyError):
     """Hager API returned an unexpected response."""
+
+    def __init__(self, message: str, *, status: int | None = None) -> None:
+        self.status = status
+        super().__init__(message)
 
 
 def _b64url(raw: bytes) -> str:
@@ -146,9 +152,15 @@ class HagerWittyApi:
                 if response.status >= 400:
                     if response.status in auth_error_statuses:
                         raise WittyHttpAuthError(response.status, payload)
-                    raise WittyApiError(f"Hager request failed (HTTP {response.status})")
+                    raise WittyApiError(
+                        f"Hager request failed (HTTP {response.status})",
+                        status=response.status,
+                    )
                 if 300 <= response.status < 400:
-                    raise WittyApiError("Unexpected HTTP redirect from Hager")
+                    raise WittyApiError(
+                        "Unexpected HTTP redirect from Hager",
+                        status=response.status,
+                    )
                 return response.status, payload
         except WittyError:
             raise
@@ -336,7 +348,8 @@ class HagerWittyApi:
         method: str = "GET",
         cache_policy: str | None = None,
     ) -> Any:
-        """Call the Hager API, refreshing and retrying once on 401/403."""
+        """Call the Hager API, with auth recovery and one safe transient retry."""
+        method = method.upper()
         token = await self.async_access_token()
 
         async def _do_request(access_token: str) -> Any:
@@ -359,8 +372,31 @@ class HagerWittyApi:
             )
             return payload
 
+        async def _do_request_with_transient_retry(access_token: str) -> Any:
+            """Retry one idempotent GET after cloud 5xx/network failure."""
+            try:
+                return await _do_request(access_token)
+            except WittyConnectionError:
+                if method != "GET":
+                    raise
+                _LOGGER.warning(
+                    "Hager cloud request failed temporarily; retrying once in %.0f seconds",
+                    _TRANSIENT_RETRY_DELAY_SECONDS,
+                )
+            except WittyApiError as err:
+                if method != "GET" or err.status not in _TRANSIENT_API_STATUSES:
+                    raise
+                _LOGGER.warning(
+                    "Hager cloud returned HTTP %s; retrying once in %.0f seconds",
+                    err.status,
+                    _TRANSIENT_RETRY_DELAY_SECONDS,
+                )
+
+            await asyncio.sleep(_TRANSIENT_RETRY_DELAY_SECONDS)
+            return await _do_request(access_token)
+
         try:
-            return await _do_request(token)
+            return await _do_request_with_transient_retry(token)
         except WittyAuthError:
             _LOGGER.info(
                 "Hager API rejected the access token; forcing OAuth refresh and retry"
@@ -376,14 +412,15 @@ class HagerWittyApi:
             raise WittyAuthError("No access token available after refresh")
 
         try:
-            return await _do_request(self._access_token)
+            return await _do_request_with_transient_retry(self._access_token)
         except WittyHttpAuthError as err:
             # The refresh itself succeeded, so do not throw the user back into
             # OAuth just because the resource API still returns 401/403. A later
             # coordinator poll can retry; reauth is reserved for a definitively
             # rejected refresh token.
             raise WittyApiError(
-                f"Hager API rejected the refreshed access token (HTTP {err.status})"
+                f"Hager API rejected the refreshed access token (HTTP {err.status})",
+                status=err.status,
             ) from err
 
     async def async_get_user_data(self) -> dict[str, Any]:
