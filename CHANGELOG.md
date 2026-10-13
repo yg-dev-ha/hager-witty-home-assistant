@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1 — Hager Cloud reliability
+
+- Default polling interval increased from 10 seconds to 30 seconds.
+- One safe retry with a 3-second backoff for idempotent status GET requests after network errors or HTTP 500/502/503/504 responses.
+- Start/stop POST commands are not retried, avoiding duplicate charging commands after ambiguous cloud failures.
+- Added offline regression tests for transient HTTP 500 and connection failures.
+
 ## 0.1.0 — Initial public release
 
 - Hager Witty Start cloud integration with UI setup in English and French.
