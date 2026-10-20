@@ -41,6 +41,10 @@
         "data": {
           "scan_interval": "Intervalle d’actualisation (secondes)",
           "stop_on_plug": "Arrêter automatiquement la charge au branchement du véhicule"
+        },
+        "data_description": {
+          "scan_interval": "Fréquence de vérification de l’état de la borne auprès du cloud Hager.",
+          "stop_on_plug": "Lorsque vous branchez votre véhicule, Home Assistant demande automatiquement l’arrêt de la charge. La borne pouvant démarrer immédiatement, quelques secondes ou davantage peuvent être nécessaires avant l’arrêt, selon la communication avec le cloud Hager."
         }
       }
     }
