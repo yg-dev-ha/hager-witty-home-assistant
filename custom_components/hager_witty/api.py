@@ -379,14 +379,14 @@ class HagerWittyApi:
             except WittyConnectionError:
                 if method != "GET":
                     raise
-                _LOGGER.warning(
+                _LOGGER.debug(
                     "Hager cloud request failed temporarily; retrying once in %.0f seconds",
                     _TRANSIENT_RETRY_DELAY_SECONDS,
                 )
             except WittyApiError as err:
                 if method != "GET" or err.status not in _TRANSIENT_API_STATUSES:
                     raise
-                _LOGGER.warning(
+                _LOGGER.debug(
                     "Hager cloud returned HTTP %s; retrying once in %.0f seconds",
                     err.status,
                     _TRANSIENT_RETRY_DELAY_SECONDS,
