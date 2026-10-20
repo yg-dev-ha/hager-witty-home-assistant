@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .const import EVENT_VEHICLE_AVAILABLE, EVENT_VEHICLE_CHARGING, KNOWN_EVENT_TYPES
+from .const import EVENT_VEHICLE_AVAILABLE, EVENT_VEHICLE_CHARGING, EVENT_CONNECTION_LOST, KNOWN_EVENT_TYPES
 
 
 def _value(d: dict[str, Any], *keys: str) -> Any:
@@ -49,7 +49,7 @@ def is_charging(data: dict[str, Any]) -> bool | None:
     open while a vehicle is merely plugged in, even if charging is stopped.
     """
     event_type = status_event_type(data)
-    if event_type not in KNOWN_EVENT_TYPES:
+    if event_type not in KNOWN_EVENT_TYPES or event_type == EVENT_CONNECTION_LOST:
         return None
     return event_type == EVENT_VEHICLE_CHARGING
 
