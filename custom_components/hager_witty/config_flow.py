@@ -21,6 +21,7 @@ from .const import (
     CONF_LOCALE,
     CONF_REFRESH_TOKEN,
     CONF_SCAN_INTERVAL,
+    CONF_STOP_ON_PLUG,
     CONF_TOKEN_ENDPOINT,
     DEFAULT_COUNTRY,
     DEFAULT_LOCALE,
@@ -193,6 +194,7 @@ class HagerWittyOptionsFlow(OptionsFlowWithReload):
             return self.async_create_entry(title="", data=user_input)
 
         current = int(self.config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL))
+        stop_on_plug = bool(self.config_entry.options.get(CONF_STOP_ON_PLUG, False))
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
@@ -205,7 +207,8 @@ class HagerWittyOptionsFlow(OptionsFlowWithReload):
                             mode=NumberSelectorMode.BOX,
                             unit_of_measurement="s",
                         )
-                    )
+                    ),
+                    vol.Required(CONF_STOP_ON_PLUG, default=stop_on_plug): bool,
                 }
             ),
         )
