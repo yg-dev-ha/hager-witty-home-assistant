@@ -41,6 +41,10 @@
         "data": {
           "scan_interval": "Update interval (seconds)",
           "stop_on_plug": "Automatically stop charging when a vehicle is plugged in"
+        },
+        "data_description": {
+          "scan_interval": "How often to check charger status through Hager Cloud.",
+          "stop_on_plug": "When you plug in your vehicle, Home Assistant automatically requests that charging stop. Since the charger may start immediately, stopping can take a few seconds or longer depending on Hager Cloud communication."
         }
       }
     }
