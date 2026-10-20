@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import timedelta
 from typing import Any
@@ -10,7 +11,10 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import HagerWittyApi, WittyApiError, WittyAuthError, WittyConnectionError, WittyError
-from .const import CONF_DEVICE_ID, DEFAULT_SCAN_INTERVAL, DOMAIN, KNOWN_EVENT_TYPES
+from .const import (CONF_DEVICE_ID, CONF_STOP_ON_PLUG, DEFAULT_SCAN_INTERVAL, DOMAIN,
+                    EVENT_CHARGER_AVAILABLE, EVENT_VEHICLE_AVAILABLE,
+                    EVENT_VEHICLE_CHARGING, KNOWN_EVENT_TYPES)
+from .models import status_event_type
 
 _LOGGER = logging.getLogger(__name__)
 _MAX_ERROR_POLL_INTERVAL_SECONDS = 300
@@ -69,6 +73,8 @@ class HagerWittyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.api = api
         self._device_id = str(entry.data[CONF_DEVICE_ID])
         self._last_status_signature: tuple[Any, ...] | None = None
+        self._last_connection_state: int | None = None
+        self._stop_sent_for_connection = False
 
     def _log_status(self, data: dict[str, Any]) -> None:
         details = _safe_status_details(data)
@@ -151,6 +157,7 @@ class HagerWittyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self._consecutive_cloud_failures = 0
                 self.update_interval = timedelta(seconds=self._normal_poll_interval)
             self._log_status(data)
+            self._handle_plug_transition(data)
             return data
         except WittyAuthError as err:
             raise ConfigEntryAuthFailed from err
@@ -180,3 +187,36 @@ class HagerWittyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self._consecutive_cloud_failures,
                 seconds,
             )
+
+    def _handle_plug_transition(self, data: dict[str, Any]) -> None:
+        """Stop once after a confirmed unplugged -> plugged transition.
+
+        Never infer a new plug event from startup, a cloud outage, or code 2010.
+        """
+        event = status_event_type(data)
+        if event == EVENT_CHARGER_AVAILABLE:
+            self._last_connection_state = event
+            self._stop_sent_for_connection = False
+            return
+        if event not in (EVENT_VEHICLE_AVAILABLE, EVENT_VEHICLE_CHARGING):
+            return
+        was_unplugged = self._last_connection_state == EVENT_CHARGER_AVAILABLE
+        self._last_connection_state = event
+        if (
+            not self.config_entry.options.get(CONF_STOP_ON_PLUG, False)
+            or not was_unplugged
+            or self._stop_sent_for_connection
+        ):
+            return
+        self._stop_sent_for_connection = True
+        self.hass.async_create_task(self._async_stop_on_plug())
+
+    async def _async_stop_on_plug(self) -> None:
+        """Issue a single stop command; never retry an ambiguous POST."""
+        try:
+            await self.api.async_control(self._device_id, "stop")
+            _LOGGER.info("Hager stop-on-plug command sent; awaiting charger status")
+        except WittyError as err:
+            _LOGGER.error("Hager stop-on-plug could not confirm stop: %s", err)
+        except Exception:
+            _LOGGER.exception("Unexpected Hager stop-on-plug failure")
