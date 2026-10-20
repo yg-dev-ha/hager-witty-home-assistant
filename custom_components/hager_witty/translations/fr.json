@@ -39,7 +39,8 @@
       "init": {
         "title": "Options Hager Witty",
         "data": {
-          "scan_interval": "Intervalle d’actualisation (secondes)"
+          "scan_interval": "Intervalle d’actualisation (secondes)",
+          "stop_on_plug": "Arrêter automatiquement la charge au branchement du véhicule (désactivé par défaut)"
         }
       }
     }
