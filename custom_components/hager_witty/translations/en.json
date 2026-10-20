@@ -40,7 +40,7 @@
         "title": "Hager Witty options",
         "data": {
           "scan_interval": "Update interval (seconds)",
-          "stop_on_plug": "Automatically stop charging when a vehicle is plugged in (off by default)"
+          "stop_on_plug": "Automatically stop charging when a vehicle is plugged in"
         }
       }
     }
