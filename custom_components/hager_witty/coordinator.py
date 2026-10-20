@@ -13,6 +13,7 @@ from .api import HagerWittyApi, WittyAuthError, WittyConnectionError, WittyError
 from .const import CONF_DEVICE_ID, DEFAULT_SCAN_INTERVAL, DOMAIN, KNOWN_EVENT_TYPES
 
 _LOGGER = logging.getLogger(__name__)
+_MAX_ERROR_POLL_INTERVAL_SECONDS = 300
 
 
 def _value(d: dict[str, Any], *keys: str) -> Any:
@@ -63,6 +64,8 @@ class HagerWittyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             config_entry=entry,
             update_interval=timedelta(seconds=scan_interval or DEFAULT_SCAN_INTERVAL),
         )
+        self._normal_poll_interval = int(scan_interval or DEFAULT_SCAN_INTERVAL)
+        self._consecutive_cloud_failures = 0
         self.api = api
         self._device_id = str(entry.data[CONF_DEVICE_ID])
         self._last_status_signature: tuple[Any, ...] | None = None
@@ -139,9 +142,37 @@ class HagerWittyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             device = self.api.get_device(data)
             if str(device.get("Id") or device.get("id")) != self._device_id:
                 raise UpdateFailed("Hager returned a different charger; check the account configuration")
+            if self._consecutive_cloud_failures:
+                _LOGGER.info(
+                    "Hager cloud recovered after %d failed poll(s); restoring %ds polling",
+                    self._consecutive_cloud_failures,
+                    self._normal_poll_interval,
+                )
+                self._consecutive_cloud_failures = 0
+                self.update_interval = timedelta(seconds=self._normal_poll_interval)
             self._log_status(data)
             return data
         except WittyAuthError as err:
             raise ConfigEntryAuthFailed from err
-        except (WittyConnectionError, WittyError) as err:
+        except WittyConnectionError as err:
+            self._throttle_cloud_polling()
             raise UpdateFailed(str(err)) from err
+        except WittyError as err:
+            raise UpdateFailed(str(err)) from err
+
+    def _throttle_cloud_polling(self) -> None:
+        """Back off failed cloud polls without delaying charger control POSTs."""
+        self._consecutive_cloud_failures += 1
+        seconds = min(
+            _MAX_ERROR_POLL_INTERVAL_SECONDS,
+            self._normal_poll_interval * (2 ** min(self._consecutive_cloud_failures, 8)),
+        )
+        self.update_interval = timedelta(seconds=seconds)
+        if self._consecutive_cloud_failures == 1:
+            _LOGGER.warning("Hager cloud unavailable; polling backed off to %ds", seconds)
+        else:
+            _LOGGER.debug(
+                "Hager cloud still unavailable after %d polls; next interval %ds",
+                self._consecutive_cloud_failures,
+                seconds,
+            )
