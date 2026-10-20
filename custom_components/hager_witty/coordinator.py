@@ -9,7 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import HagerWittyApi, WittyAuthError, WittyConnectionError, WittyError
+from .api import HagerWittyApi, WittyApiError, WittyAuthError, WittyConnectionError, WittyError
 from .const import CONF_DEVICE_ID, DEFAULT_SCAN_INTERVAL, DOMAIN, KNOWN_EVENT_TYPES
 
 _LOGGER = logging.getLogger(__name__)
@@ -156,6 +156,10 @@ class HagerWittyCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             raise ConfigEntryAuthFailed from err
         except WittyConnectionError as err:
             self._throttle_cloud_polling()
+            raise UpdateFailed(str(err)) from err
+        except WittyApiError as err:
+            if err.status in (429, 500, 502, 503, 504):
+                self._throttle_cloud_polling()
             raise UpdateFailed(str(err)) from err
         except WittyError as err:
             raise UpdateFailed(str(err)) from err
